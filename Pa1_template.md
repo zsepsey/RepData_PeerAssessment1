@@ -14,7 +14,8 @@ The results are presented in a a single R markdown document that can be processe
 
 To run the file, execute the following code in the R working directory:
 
-```{r eval=FALSE}
+
+```r
   library(knitr)
   knit2html("Pa1_template.Rmd")
   browseURL("Pa1_template.Html")
@@ -23,7 +24,8 @@ To run the file, execute the following code in the R working directory:
 
 ### Basic Settings
 
-```{r}
+
+```r
 # Load required libraries
 library(lattice) 
 library(plyr)
@@ -37,19 +39,32 @@ echo = TRUE
 
 **1. Load the data (i.e. read.csv())**
 
-```{r}
+
+```r
 activity <- read.csv("activity.csv",  sep=",", header = TRUE)
-````
+```
 **2. Process/transform the data (if necessary) into a format suitable for your analysis**
 
-```{r}
+
+```r
 activity[,1] <- as.numeric(activity$steps)
 activity[,2] <- as.Date(activity$date, "%Y-%m-%d")
-````
+```
 
 The data set looks now like this:
-```{r}
+
+```r
 head(activity)
+```
+
+```
+##   steps       date interval
+## 1    NA 2012-10-01        0
+## 2    NA 2012-10-01        5
+## 3    NA 2012-10-01       10
+## 4    NA 2012-10-01       15
+## 5    NA 2012-10-01       20
+## 6    NA 2012-10-01       25
 ```
 ### What is mean total number of steps taken per day?
 
@@ -57,7 +72,8 @@ For this part of the assignment, we can ignore the missing values in the dataset
 
 **1. Make a histogram of the total number of steps taken each day**
 
-````{r}
+
+```r
 # Calculate the required data
 steps_per_day <- ddply(activity, .(date), summarise, Steps=sum(steps))
 
@@ -67,34 +83,40 @@ hist(steps_per_day$Steps,col=c("red"), breaks=20, xlim=c(0, 25000),
      xlab="Number of Steps per Day", ylab="Number of times in a day (Count)")
 ```
 
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png) 
+
 **2. Calculate and report the mean and median total number of steps taken per day**
 
-````{r}
+
+```r
 mean <- mean(steps_per_day$Steps, na.rm=T)
 median <- median(steps_per_day$Step, na.rm=T)
-````
+```
 
-The mean is **`r formatC(as.numeric(mean), format="f", digits=2)`**, the median is **`r formatC(as.numeric(median), format="f", digits=2)`**.
+The mean is **10766.19**, the median is **10765.00**.
 
 ### What is the average daily activity pattern?
 
 **1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)**
 
-```{r}
+
+```r
 av_steps_per_interval <- ddply(activity, .(interval), summarise, Steps=mean(steps, na.rm=T))
 plot.ts(av_steps_per_interval$Steps, col=c("red"), 
         main="Average Daily Activity Pattern", 
         xlab="Interval", ylab="Number of steps")
 ```
 
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png) 
+
 **2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?**
 
-```{r}
-interval_highest_av_steps <- av_steps_per_interval[av_steps_per_interval$Steps==max(av_steps_per_interval$Steps), ]
 
+```r
+interval_highest_av_steps <- av_steps_per_interval[av_steps_per_interval$Steps==max(av_steps_per_interval$Steps), ]
 ```
 
-The maximum average steps is **`r interval_highest_av_steps$Steps`** in interval **`r interval_highest_av_steps$interval`**.
+The maximum average steps is **206.1698113** in interval **835**.
 
 ### Imputing missing values
 
@@ -102,17 +124,19 @@ Note that there are a number of days/intervals where there are missing values (c
 
 **1. Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs)**
 
-```{r}
+
+```r
 num_of_NA <- sum(!complete.cases(activity))
 ```
 
-The number of missing values is **`r num_of_NA`**.
+The number of missing values is **2304**.
 
 **2. Devise a strategy for filling in all of the missing values in the dataset.**
 
 To populate the missing step values, we use the mean value for the corresponding interval. 
 
-```{r}
+
+```r
 activity_complete <- activity
 for (i in 1:nrow(activity)) {
   if (is.na(activity_complete$steps[i])) {
@@ -123,20 +147,37 @@ for (i in 1:nrow(activity)) {
 ```
 
 The activity data look now like this:
-```{r}
+
+```r
 head(activity_complete)
+```
+
+```
+##       steps       date interval
+## 1 1.7169811 2012-10-01        0
+## 2 0.3396226 2012-10-01        5
+## 3 0.1320755 2012-10-01       10
+## 4 0.1509434 2012-10-01       15
+## 5 0.0754717 2012-10-01       20
+## 6 2.0943396 2012-10-01       25
 ```
 
 To check if there are no missing values:
 
-```{r}
+
+```r
 sum(!complete.cases(activity_complete))
+```
+
+```
+## [1] 0
 ```
 
 
 **3. Make a histogram of the total number of steps taken each day**
 
-```{r}
+
+```r
 steps_per_day_complete <- ddply(activity_complete, .(date), summarise, Steps=sum(steps))
 hist(steps_per_day_complete$Steps,col=c("red"), 
      breaks=20, xlim=c(0, 25000), ylim=c(0,20),
@@ -144,26 +185,29 @@ hist(steps_per_day_complete$Steps,col=c("red"),
      xlab="Interval", ylab="Number of steps")  
 ```
 
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png) 
+
 **4. Calculate and report the mean and median total number of steps taken per day**
 
-```{r}
+
+```r
 mean_complete <- mean(steps_per_day_complete$Steps)
 median_complete <- median(steps_per_day_complete$Step)
 ```
 
-The mean is **`r formatC(as.numeric(mean_complete), format="f", digits=2)`** and the median is **`r formatC(as.numeric(median_complete), format="f", digits=2)`**.
+The mean is **10766.19** and the median is **10766.19**.
 
 **5. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?**
 
 Before filling in the data, the values were:
 
-- mean: **`r formatC(as.numeric(mean), format="f", digits=2)`** 
-- median: **`r formatC(as.numeric(median), format="f", digits=2)`**
+- mean: **10766.19** 
+- median: **10765.00**
 
 After filling in the data the values became:
 
-- mean: **`r formatC(as.numeric(mean_complete), format="f", digits=2)`**
-- median: **`r formatC(as.numeric(median_complete), format="f", digits=2)`**
+- mean: **10766.19**
+- median: **10766.19**
 
 We can therefore see that there is a slight difference in the median after filling in the missing values while the mean stayed the same.
 
@@ -177,18 +221,19 @@ After filling in the missing vcalues, we can observe a slight change in te media
 
 We prepare the data by adding a column to activity data set with the factor that indicate week- and weekend days.
 
-```{r}
+
+```r
 activity_complete$weekdays <- factor(weekdays(activity_complete$date))
 levels(activity_complete$weekdays) <- list(weekday = c("Monday", "Tuesday",
                                                        "Wednesday", "Thursday", "Friday"),
                                            weekend = c("Saturday", "Sunday"))
-
 ```
 
 **2. Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).**
 
 
-```{r}
+
+```r
 av_steps_per_interval_complete <- ddply(activity_complete, .(interval, weekdays), summarise, 
                                         Steps=mean(steps, na.rm=T))
 
@@ -197,5 +242,7 @@ xyplot(av_steps_per_interval_complete$Steps ~ av_steps_per_interval_complete$int
        layout = c(1, 2), type = "l", 
        xlab = "Interval", ylab = "Number of steps")
 ```
+
+![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17-1.png) 
 
 We can see from the plot above that during the weekends activities are more evenly distributed throughout the day, while on weekdays there is a large peek during the morning hours. The latter is probably due to the fact that on weekdays activities are concentrated around working ours. During the weekends is one has more freedom to organize sports activities, hence the more even distribution.
